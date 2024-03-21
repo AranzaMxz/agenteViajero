@@ -7,10 +7,9 @@ import java.util.ArrayList;
 
 public class Main{
 
-    List<Integer> listaConexiones = new ArrayList<>();
+
 
     char[] ciudades = {'A','B','C','D','E','F','G','H','I','J','K','L','M','N'}; // Lista que almacena los nombres de los puntos
-
     char puntoPartida = 'E'; // Punto en el que se iniciará el recorrido
 
     // Definimos la matriz que contendra los valores de cada arista
@@ -34,8 +33,9 @@ public class Main{
         /* 13 N */ {  0  ,  0  ,  0  ,  0  ,  0  ,  0  ,  0  ,  0  ,  0  ,  0  ,  14 ,  18 ,  24 ,  0  }
 
     };
+    int indicePartida = indiceInicial();
     public void algoritmo(){
-        int indicePartida = indiceInicial();
+
         System.out.println("Indice del elemento inicial: "+indicePartida);
 
         elementoMenor(indicePartida); // Comenzamos desde el indice del nodo inicial
@@ -56,7 +56,9 @@ public class Main{
     {
         int indiceActual = indiceInicial;
         int indiceTemp = 0;
-        int menor = -1; // se guarda el elemento menor
+        int menorTemporal = -1; // se guarda el elemento menor
+
+        List<Integer> listaConexiones = new ArrayList<>();
 
         int x ;
         for (int i = 0 ; i < ciudades.length ; i++)
@@ -64,18 +66,44 @@ public class Main{
             x = MATRIZ [i][indiceActual];
             if (x != 0)
             {
-                if (menor == -1) // quiere decir que es el primer elemento a agregar
+                if (menorTemporal == -1) // quiere decir que es el primer elemento a agregar
                 {
-                    menor = x;
+                    menorTemporal = x;
                     indiceTemp = i;
                 }
-                else if (x < menor) // Hay un nuevo menor
+                else if (x < menorTemporal) // Hay un nuevo menor
                 {
-                    menor = x;
+                    menorTemporal = x;
                     indiceTemp = i;
                 }
             }
         }
-        System.out.println("Menor temporal: " + menor + " [" + indiceTemp + "]");
+        System.out.println("Menor temporal: " + menorTemporal + " [" + indiceTemp + "]");
+        // Vamos a ver qué conexiones tiene el nodo actual
+        conexiones(indiceTemp, listaConexiones);
+        System.out.println("Lista de conexiones de " + ciudades[indiceTemp] + ": " + listaConexiones);
+    }
+    public boolean hayConexion(int indice)
+    {
+        if (MATRIZ[indicePartida][indice] !=0 ) // Existe conexión
+            return true;
+        return false;
+    }
+    public List conexiones(int indice, List lista)
+    {
+        int j = 0 ;
+        for (int i = 0 ; i < ciudades.length ; i++)
+        {
+            if (MATRIZ[i][indice] != 0)
+                lista.add(i);
+            if (j < lista.size())
+            {
+                // Si tiene conexión con el nodo partida se agrega un -1
+                if (lista.get(j).equals(indicePartida))
+                    lista.add(-1);
+                j++;
+            }
+        }
+        return lista;
     }
 }
