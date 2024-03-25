@@ -2,108 +2,149 @@
 // Alumna: Aranza Alondra Muñoz Chávez
 // Materia: Inteligencia Artificial
 // Grupo: 6CM4
-import java.util.List;
+import javax.jnlp.ClipboardService;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Main{
 
+    HashMap<String, String[][]> grafica = new HashMap<>();
+    ArrayList<List> recorridos = new ArrayList<>(); // Lista que contiene todos los recorridos
+    ArrayList<Integer> pesos = new ArrayList<>(); // Lista que contiene todos los pesos
 
-
-    char[] ciudades = {'A','B','C','D','E','F','G','H','I','J','K','L','M','N'}; // Lista que almacena los nombres de los puntos
-    char puntoPartida = 'E'; // Punto en el que se iniciará el recorrido
-
-    // Definimos la matriz que contendra los valores de cada arista
-
-    public static int[][] MATRIZ = {
-                   //  0  |  1  |  2  |  3  |  4  |  5  |  6  |  7  |  8  |  9  |  10 |  11 |  12 |  13 |
-                   //  A  |  B  |  C  |  D  |  E  |  F  |  G  |  H  |  I  |  J  |  K  |  L  |  M  |  N  |
-        /* 0  A */ {  0  ,  9  ,  0  ,  0  ,  15 ,  0  ,  0  ,  0  ,  0  ,  22 ,  0  ,  0  ,  0  ,  0  },
-        /* 1  B */ {  9  ,  0  ,  11 ,  0  ,  17 ,  0  ,  0  ,  0  ,  0  ,  0  ,  0  ,  0  ,  0  ,  0  },
-        /* 2  C */ {  0  ,  11 ,  0  ,  19 ,  0  ,  0  ,  0  ,  0  ,  0  ,  0  ,  0  ,  0  ,  0  ,  0  },
-        /* 3  D */ {  0  ,  0  ,  19 ,  0  ,  15 ,  14 ,  0  ,  0  ,  0  ,  0  ,  0  ,  0  ,  0  ,  0  },
-        /* 4  E */ {  15 ,  17 ,  0  ,  15 ,  0  ,  0  ,  14 ,  16 ,  0  ,  0  ,  0  ,  0  ,  0  ,  0  },
-        /* 5  F */ {  0  ,  0  ,  0  ,  14 ,  0  ,  0  ,  0  ,  15 ,  12 ,  0  ,  0  ,  0  ,  0  ,  0  },
-        /* 6  G */ {  0  ,  0  ,  0  ,  0  ,  14 ,  0  ,  0  ,  0  ,  0  ,  0  ,  14 ,  25 ,  0  ,  0  },
-        /* 7  H */ {  0  ,  0  ,  0  ,  0  ,  16 ,  15 ,  0  ,  0  ,  15 ,  0  ,  0  ,  17 ,  0  ,  0  },
-        /* 8  I */ {  0  ,  0  ,  0  ,  0  ,  0  ,  12 ,  0  ,  15 ,  0  ,  0  ,  0  ,  0  ,  19 ,  0  },
-        /* 9  J */ {  22 ,  0  ,  0  ,  0  ,  0  ,  0  ,  0  ,  0  ,  0  ,  0  ,  6  ,  0  ,  0  ,  0  },
-        /* 10 K */ {  0  ,  0  ,  0  ,  0  ,  0  ,  0  ,  14 ,  0  ,  0  ,  6  ,  0  ,  0  ,  0  ,  14 },
-        /* 11 L */ {  0  ,  0  ,  0  ,  0  ,  0  ,  0  ,  25 ,  17 ,  0  ,  0  ,  0  ,  0  ,  18 ,  18 },
-        /* 12 M */ {  0  ,  0  ,  0  ,  0  ,  0  ,  0  ,  0  ,  0  ,  19 ,  0  ,  0  ,  18 ,  0  ,  24 },
-        /* 13 N */ {  0  ,  0  ,  0  ,  0  ,  0  ,  0  ,  0  ,  0  ,  0  ,  0  ,  14 ,  18 ,  24 ,  0  }
-
+    public String[] nodos =
+    {
+        "A","B","C","D","E","F","G","H","I","J","K","L","M","N"
     };
-    int indicePartida = indiceInicial();
-    public void algoritmo(){
-
-        System.out.println("Indice del elemento inicial: "+indicePartida);
-
-        elementoMenor(indicePartida); // Comenzamos desde el indice del nodo inicial
-
-    }
-    // Devuelve el índice del nodo inicial
-    public int indiceInicial()
-    {
-        for (int i = 0 ; i < ciudades.length ; i ++)
-        {
-            if (puntoPartida == ciudades[i])
-                return i;
-        }
-        System.out.println("Elemento inicial no encontrado");
-        return -1;
-    }
-    public void elementoMenor(int indiceInicial)
-    {
-        int indiceActual = indiceInicial;
-        int indiceTemp = 0;
-        int menorTemporal = -1; // se guarda el elemento menor
-
-        List<Integer> listaConexiones = new ArrayList<>();
-
-        int x ;
-        for (int i = 0 ; i < ciudades.length ; i++)
-        {
-            x = MATRIZ [i][indiceActual];
-            if (x != 0)
+    // Definimos las conexiones de cada nodo como "coordenadas"
+    public String[][][] coordenadas =
             {
-                if (menorTemporal == -1) // quiere decir que es el primer elemento a agregar
-                {
-                    menorTemporal = x;
-                    indiceTemp = i;
-                }
-                else if (x < menorTemporal) // Hay un nuevo menor
-                {
-                    menorTemporal = x;
-                    indiceTemp = i;
-                }
+                    // {Destino, peso}
+                    /* A */ {{"B","9"}, {"E","15"}, {"J","22"}}, // [a,b,c] , a = [b,9] a[0] = b
+                    /* B */ {{"A","9"}, {"C","11"}, {"E","17"}},
+                    /* C */ {{"B","11"}, {"D","19"}},
+                    /* D */ {{"C","19"}, {"E","15"}, {"F","14"}},
+                    /* E */ {{"A","15"}, {"B","17"}, {"D","15"},{"G","14"}, {"H","16"}},
+                    /* F */ {{"D","14"}, {"I","12"}, {"H","15"}},
+                    /* G */ {{"E","14"}, {"L","25"}, {"K","14"}},
+                    /* H */ {{"E","16"}, {"I","15"}, {"F","15"}, {"L","17"}},
+                    /* I */ {{"F","12"}, {"H","15"}, {"M","19"}},
+                    /* J */ {{"A","22"}, {"K","6"}},
+                    /* K */ {{"G","14"}, {"J","6"}, {"N","14"}},
+                    /* L */ {{"G","25"}, {"H","17"}, {"M","18"}, {"N","18"}},
+                    /* M */ {{"I","19"}, {"L","18"}, {"N","24"}},
+                    /* N */ {{"M","24"}, {"L","18"}, {"K","14"}},
+            };
+    public void algoritmo()
+    {
+        String nodoInicial = "E"; // Nodo inicial
+
+        // Primero construimos la gráfica que contiene los nodos y sus posibles caminos
+        construirGrafica();
+        // Vamos a encontrar los posibles caminos que empiecen y terminen con el nodo inicial
+        busqueda(nodoInicial);
+
+    }
+    public void construirGrafica()
+    {
+        // Colocamos cada ciudad con sus respectivos caminos
+        for (int i = 0 ; i < nodos.length ; i++)
+        {
+            grafica.put(nodos[i],coordenadas[i]);
+        }
+    }
+    public void busqueda(String nodo)
+    {
+        String otroCamino;
+        int costoOtrocamino;
+        String[][] caminos = grafica.get(nodo); // obtenemos los posibles caminos del nodo inicial
+
+        // iteramos sobre sus posibles caminos
+        for (int i = 0 ; i < caminos.length ; i++)
+        {
+            List<String> nuevoCamino = new ArrayList<>(); // con cada iteración se empieza un nuevo camino
+
+            nuevoCamino.add(nodo); // agregamos el nodo inicial
+
+            otroCamino = caminos[i][0]; // posibles nodos a ir desde el nodo inicial
+            costoOtrocamino = Integer.parseInt(caminos[i][1]); //costo desde ese nodo
+
+            buscarCaminos(otroCamino, nuevoCamino, costoOtrocamino);
+        }
+        // imprimimos los recorridos guardados
+        imprimirRecorridos();
+
+        // buscamos el/los recorrido(s) con el menor peso
+        recorridoMenorPeso();
+    }
+    private void buscarCaminos(String nodo, List<String> caminoActual, int pesoAcumulado)
+    {
+        // si ya contiene el nodo y aún no recorremos todos los nodos regresamos
+        if (caminoActual.contains(nodo) && !(caminoActual.size() == nodos.length))
+            return;
+
+        caminoActual.add(nodo); // agregamos el nodo al camino actual, si aún no está
+        String[][] caminos = grafica.get(nodo); // obtenemos los posibles caminos del nodo recién agregado
+
+        // si el camino actual ya recorrió todos los nodos y además el último nodo es el nodo inicial, guardamos el recorrido
+        if (caminoActual.size()== nodos.length+1 && caminoActual.get(0).equals(caminoActual.get(caminoActual.size() - 1))) // acabamos un recorrido
+        {
+            recorridos.add(new ArrayList<>(caminoActual)); // lo guardamos como un nuevo camino
+            pesos.add(pesoAcumulado); // guardamos el peso total
+            return;
+        }
+
+        // usamos recursividad para encontrar el siguiente nodo a recorrer
+        for (int i = 0; i < caminos.length; i++)
+        {
+            String sigNodo = caminos[i][0]; // siguiente nodo en los caminos posibles
+            int costo = Integer.parseInt(caminos[i][1]); // el costo del siguiente nodo
+            // volvemos a llamar a la función y le pasamos el siguiente nodo, el camino actual sin perder lo anterior y el peso hasta ahora más el costo de ese nodo
+            buscarCaminos(sigNodo,new ArrayList<>(caminoActual),pesoAcumulado+costo);
+        }
+    }
+
+    private void imprimirRecorridos()
+    {
+        // imprimimos todos los recorridos
+        System.out.println("\nRecorridos:\n");
+        for (int i = 0 ; i < recorridos.size();i ++)
+        {
+            System.out.println((i+1)+") "+ recorridos.get(i) + "= " + pesos.get(i)); //+ pesos.get(i)
+        }
+    }
+    private void recorridoMenorPeso()
+    {
+        int menor = 0; // almacenamos el peso menor
+        ArrayList<Integer> listaDelMenor = new ArrayList<>(); //almacenamos los índices de los menores pesos
+
+        // buscamos el menor peso
+        for (int i = 0; i < pesos.size(); i ++)
+        {
+
+            if (menor == 0) // el primer peso es hasta ahora el menor
+                menor = pesos.get(i);
+            else if (pesos.get(i)<menor)
+            {
+                menor = pesos.get(i);
+                listaDelMenor.clear(); // limpiamos porque ahora hay un nuevo menor
+                listaDelMenor.add(i); // agregamos el índice del nuevo menor
+
+            }
+            else if (pesos.get(i).equals(menor)) // si hay otro peso igual que el menor, también guardamos su índice
+            {
+                    listaDelMenor.add(i);
+
             }
         }
-        System.out.println("Menor temporal: " + menorTemporal + " [" + indiceTemp + "]");
-        // Vamos a ver qué conexiones tiene el nodo actual
-        conexiones(indiceTemp, listaConexiones);
-        System.out.println("Lista de conexiones de " + ciudades[indiceTemp] + ": " + listaConexiones);
-    }
-    public boolean hayConexion(int indice)
-    {
-        if (MATRIZ[indicePartida][indice] !=0 ) // Existe conexión
-            return true;
-        return false;
-    }
-    public List conexiones(int indice, List lista)
-    {
-        int j = 0 ;
-        for (int i = 0 ; i < ciudades.length ; i++)
+        // Imprimimos los recorridos con menor peso
+        System.out.println("\nEl/los recorrido(s) con menor peso son: \n");
+        for (int i = 0; i < listaDelMenor.size(); i++)
         {
-            if (MATRIZ[i][indice] != 0)
-                lista.add(i);
-            if (j < lista.size())
-            {
-                // Si tiene conexión con el nodo partida se agrega un -1
-                if (lista.get(j).equals(indicePartida))
-                    lista.add(-1);
-                j++;
-            }
+                    System.out.println((listaDelMenor.get(i) + 1) + ") " + recorridos.get(listaDelMenor.get(i)) + " = " + menor);
         }
-        return lista;
     }
 }
